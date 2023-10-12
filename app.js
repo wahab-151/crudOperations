@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require('express');
 const app = express();
+const cors = require('cors');
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
@@ -11,7 +12,7 @@ const { checkDatabaseConnection } = require("./config/connection");
 
 const {movieRouter}=require('./routes/movies');
 
-
+app.use(cors());
 
 app.use('/api',movieRouter);
 

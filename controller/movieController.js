@@ -17,29 +17,45 @@ const insertMoive = async (req, res,next) => {
 }
 const getAllmovies = async (req, res) => {
   try {
-    const { page = 1, pageSize, name, rating, sortBy, sortOrder } = req.query;
+    const { page = 1, perPage = 10, name, rating, sortBy, sortOrder } = req.query;
+
+    // Ensure page is at least 1
+    const pageInt = Math.max(1, parseInt(page, 10));
+
     const options = {
-      limit: pageSize || 10,
-      offset: (page - 1) * (pageSize || 10),
+      limit: Number(perPage),
+      offset: (pageInt - 1) * Number(perPage),
       where: {
         // Add filtering conditions based on 'name' and 'rating' here.
       },
-      order: [['movieName', sortOrder || 'ASC']], // Sort by 'name' in ASC or DESC order.
+      order: [['movieName', sortOrder || 'ASC']],
     };
 
     if (name) {
       options.where.movieName = {
-        [Op.like]: `%${name}%` // Use the Op.like operator to search for 'name' in 'movieName'.
+        [Op.like]: `%${name}%`
       };
     }
 
-    const movies = await movieModel.findAll(options);
-    res.json(movies);
+    const { count, rows } = await movieModel.findAndCountAll(options);
+
+    // Construct the response object
+    const response = {
+      total: count, // Total number of movies
+      page: pageInt,
+      perPage: perPage,
+      movies: rows, // Movies for the current page
+    };
+
+    res.json(response);
   } catch (error) {
     console.error('Error retrieving movies:', error);
     res.status(500).json({ error: 'Could not retrieve movies' });
   }
 };
+
+
+
 
 
 
